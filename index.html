@@ -11,20 +11,21 @@
     </head>
     <body>
         <header>
+            <button id="btnHome">Accueil</button>
+            <button id="btnProfile">Profil</button>
             <button id="btnFormPupup">Login / Register</button>
-            <form action="#" id="searchForm">
-                <label for="searchData">Search a movie <span></span></label>
-                <input type="text" name="searchData" id="searchData" minlength="1" required>
-                <button type="submit">Search</button>
-            </form>
         </header>
 
         <main>
-            <section id="moviePopin">
+            <section id="moviePopin" class="close">
                 <article></article>
             </section>
 
-            <section id="formPopup">
+            <section id="profileContent" class="close">
+                <article>azdazdaz</article>
+            </section>
+
+            <section id="formPopup" class="close">
                 <article>
                     <div class="btn-close">
                         <button id="closeFormPopup">Close</button>
@@ -54,7 +55,14 @@
                 </article>
             </section>
 
-            <section id="movieList"></section>
+            <section id="homeContent" class="active">
+                <form action="#" id="searchForm">
+                    <label for="searchData">Search a movie <span></span></label>
+                    <input type="text" name="searchData" id="searchData" minlength="1" required>
+                    <button type="submit">Search</button>
+                </form>
+                <section id="movieList"></section>
+            </section>
         </main>
 
         <footer>

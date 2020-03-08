@@ -65,7 +65,8 @@ figure:hover + div.overview{
     z-index: 1000;
 }
 
-#moviePopin.open.close{
+#moviePopin.open.close, #moviePopin.close{
+    z-index: -100;
     opacity: 0;
 }
 
@@ -129,6 +130,24 @@ figure:hover + div.overview{
     z-index: 1000;
 }
 
-#formPopup.open.close{
+#formPopup.open.close, #formPopup.close{
     opacity: 0;
+    z-index: -100;
 }
+
+#profileContent.active {
+    display: block;
+}
+
+#profileContent.close {
+    display: none;
+}
+
+#homeContent.active {
+    display: block;
+}
+
+#homeContent.close {
+    display: none;
+}
+

@@ -6,14 +6,14 @@ document.addEventListener('DOMContentLoaded', () => {
     /* 
     Déclarations
     */
-    const searchForm = document.querySelector('header #searchForm');
-    const searchLabel = document.querySelector('header #searchForm span');
+    const searchForm = document.querySelector('#searchForm');
+    const searchLabel = document.querySelector('#searchForm span');
     const searchData = document.querySelector('[name="searchData"]');
     const themoviedbUrl = 'https://api.themoviedb.org/3/search/movie?api_key=6fd32a8aef5f85cabc50cbec6a47f92f&query=';
     const movieList = document.querySelector('#movieList');
     const moviePopin = document.querySelector('#moviePopin article');
     const formPopup = document.querySelector('#formPopup');
-    const btnFormPupup = document.querySelector('#btnFormPupup');
+    const homeContent = document.querySelector('#homeContent');
     /*
     Register form
      */
@@ -29,21 +29,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.querySelector('#loginForm');
     const emailLogin = document.querySelector('#loginForm [name="email"]');
     const passwordLogin = document.querySelector('#loginForm [name="password"]');
-    //
-
-    /*
-    Favorite
-     */
-    const favURL = 'https://api.dwsapp.io/api/favorite';
-
     /*
     User
      */
+    const favURL = 'https://api.dwsapp.io/api/favorite';
     const userURL = 'https://api.dwsapp.io/api/me';
+    const profileContent = document.querySelector('#profileContent');
+    /*
+     MENU
+     */
+    const profileBtn = document.querySelector('#btnProfile');
+    const homeBtn = document.querySelector('#btnHome');
+    const btnFormPupup = document.querySelector('#btnFormPupup');
+
 
     /* 
     Fonctions
     */
+    const menuFunction = () => {
+        profileBtn.addEventListener('click', function () {
+            if(profileContent.classList.contains("close")){
+                displayContent(homeContent, false)
+                displayContent(profileContent, true)
+            }
+        });
+
+        homeBtn.addEventListener('click', function () {
+            if(homeContent.classList.contains("close")){
+                displayContent(profileContent, false)
+                displayContent(homeContent, true)
+            }
+        })
+    };
+
+    const displayContent = (content, active) => {
+        if(active) {
+            content.classList.remove('close');
+            content.classList.add('active');
+        } else {
+            content.classList.remove('active');
+            content.classList.add('close');
+        }
+    };
+
     const getUserInfos = () => {
         if(localStorage.getItem("userId")) {
             fetch(userURL+'/'+localStorage.getItem("userId"), {
@@ -57,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .then(jsonData => {
                     console.log(jsonData);
+                    if(jsonData.data.favorite) displayFavoritesList(jsonData.data.favorite)
                 })
                 .catch(err => console.error(err));
         } else {
@@ -64,6 +93,16 @@ document.addEventListener('DOMContentLoaded', () => {
             closeFormPopup(document.querySelector('#closeFormPopup'))
         }
     }
+
+    const displayFavoritesList = collection => {
+        for (let i = 0; i < collection.length; i++) {
+            profileContent.innerHTML += `
+                    <article>
+                        Favorie ${collection[i].id}
+                    </article>
+                `;
+        }
+    };
 
     const validRegisterForm = () => {
         registerForm.addEventListener('submit', event => {
@@ -95,6 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         'password': passwordLogin.value,
                     }
                 })
+                // Close the popup
+                document.querySelector('#closeFormPopup').parentElement.parentElement.parentElement.classList.add('close');
             } else {
                 console.log('Une erreur est survenue !')
             }
@@ -173,9 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(fetchUrl)
             .then(response => response.ok ? response.json() : 'Response not OK')
             .then(jsonData => {
-                typeof keywords === 'number'
-                    ? displayPopin(jsonData)
-                    : displayMovieList(jsonData.results)
+                typeof keywords === 'number' ? displayPopin(jsonData) : displayMovieList(jsonData.results)
             })
             .catch(err => console.error(err));
     };
@@ -233,6 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
+        moviePopin.parentElement.classList.remove('close');
         moviePopin.parentElement.classList.add('open');
         closePopin(document.querySelector('#closeButton'))
         addToFav();
@@ -266,6 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* 
     Lancer IHM
     */
+    menuFunction();
     getUserInfos();
     initPopupForm();
     getSearchSumbit();
