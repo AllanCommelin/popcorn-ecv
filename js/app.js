@@ -74,34 +74,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getUserInfos = () => {
         if(localStorage.getItem("userId")) {
-            fetch(userURL+'/'+localStorage.getItem("userId"), {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+            fetchData({
+                url: userURL+'/'+localStorage.getItem("userId"),
+                method: 'GET'
             })
-                .then(response => {
-                    return response.json()
-                })
-                .then(jsonData => {
-                    console.log(jsonData);
-                    if(jsonData.data.favorite) displayFavoritesList(jsonData.data.favorite)
-                })
-                .catch(err => console.error(err));
         } else {
+            formPopup.classList.remove('close');
             formPopup.classList.add('open');
             closeFormPopup(document.querySelector('#closeFormPopup'))
         }
     }
 
-    const displayFavoritesList = collection => {
+    const getFavoritesList = collection => {
         for (let i = 0; i < collection.length; i++) {
-            profileContent.innerHTML += `
-                    <article>
-                        Favorie ${collection[i].id}
-                    </article>
-                `;
+            if(!collection[i].id.includes('tt')){// L'un de mes films en favorie a été enregistré avec un mauvaise ID, et comme on ne peut pas le supprimer je l'ignore avec cette condition
+                //Reset des favoris
+                profileContent.innerHTML = '';
+                fetchFunction(parseInt(collection[i].id), true)
+            }
         }
+    };
+    
+    const displayFavoritesList = (movie) => {
+        profileContent.innerHTML += `
+            <article class="favorite">
+                ${movie.title}
+            </article>
+        `;
     };
 
     const validRegisterForm = () => {
@@ -162,20 +161,33 @@ document.addEventListener('DOMContentLoaded', () => {
     Fetch to socket server
      */
     const fetchData = (fetchConfig) => {
-        fetch(fetchConfig.url, {
-            method: fetchConfig.method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(fetchConfig.data)
-        })
+        let obj;
+        if(fetchConfig.method ==='GET'){
+            obj = {
+                method: fetchConfig.method,
+                headers: {'Content-Type': 'application/json'}
+            }
+        } else {
+            obj = {
+                method: fetchConfig.method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(fetchConfig.data)
+            }
+        }
+        fetch(fetchConfig.url, obj)
             .then(response => {
                 return response.json()
             })
             .then(jsonData => {
-                console.log(jsonData);
-                if(jsonData.data.identity) {
-                    localStorage.setItem("userId",jsonData.data.identity._id)
+                if(jsonData.message.includes('Favorite created')) {
+                    // To update favorites if new favorite was created
+                    getUserInfos()
+                }
+                if(jsonData.data) {
+                    if(!localStorage.getItem("userId") && jsonData.data['identity']) {
+                        localStorage.setItem("userId",jsonData.data.identity._id)
+                    }
+                    if(jsonData.data['favorite']) getFavoritesList(jsonData.data.favorite)
                 }
             })
             .catch(err => console.error(err));
@@ -183,6 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const initPopupForm = () => {
         btnFormPupup.addEventListener('click', () => {
+            formPopup.classList.remove('close');
             formPopup.classList.add('open');
             closeFormPopup(document.querySelector('#closeFormPopup'))
         })
@@ -202,19 +215,19 @@ document.addEventListener('DOMContentLoaded', () => {
     /*
     Fetch to Themoviedb
      */
-    const fetchFunction = (keywords, index = 1) => {
-
+    const fetchFunction = (keywords, favorite = false , index = 1) => {
         let fetchUrl = null;
-
         typeof keywords === 'number'
             ? fetchUrl = `https://api.themoviedb.org/3/movie/${keywords}?api_key=6fd32a8aef5f85cabc50cbec6a47f92f`
             : fetchUrl = themoviedbUrl + keywords + '&page=' + index
-
-
         fetch(fetchUrl)
             .then(response => response.ok ? response.json() : 'Response not OK')
             .then(jsonData => {
-                typeof keywords === 'number' ? displayPopin(jsonData) : displayMovieList(jsonData.results)
+                if(favorite){
+                    displayFavoritesList(jsonData)
+                } else {
+                    typeof keywords === 'number' ? displayPopin(jsonData) : displayMovieList(jsonData.results)
+                }
             })
             .catch(err => console.error(err));
     };
@@ -222,8 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayMovieList = collection => {
         searchData.value = '';
         movieList.innerHTML = '';
-
-        console.log(collection)
         for (let i = 0; i < collection.length; i++) {
             movieList.innerHTML += `
                     <article>
@@ -242,7 +253,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </article>
                 `;
         };
-
         getPopinLink(document.querySelectorAll('figcaption'));
     };
 
@@ -257,12 +267,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const displayPopin = data => {
-        console.log(data);
         moviePopin.innerHTML = `
                 <div>
                     <img src="https://image.tmdb.org/t/p/w500/${data.poster_path}" alt="${data.original_title}">
                 </div>
-
                 <div>
                     <h2>${data.original_title}</h2>
                     <p>${data.overview}</p>
@@ -290,27 +298,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     'name': favBtn.getAttribute('movie-name')
                 }
             })
+            // Close popup after adding to favorite
+            document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.remove('open');
+            document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.add('close');
         })
     }
 
     const closePopin = button => {
         button.addEventListener('click', () => {
-            button.parentElement.parentElement.parentElement.classList.add('close');
-            setTimeout(() => {
-                button.parentElement.parentElement.parentElement.classList.remove('open');
+            if(button.parentElement.parentElement.parentElement.classList.contains("close")) {
                 button.parentElement.parentElement.parentElement.classList.remove('close');
-            }, 300)
+                button.parentElement.parentElement.parentElement.classList.add('open');
+            } else {
+                button.parentElement.parentElement.parentElement.classList.remove('open');
+                button.parentElement.parentElement.parentElement.classList.add('close');
+            }
         })
     };
+
+    const IHM = () => {
+        menuFunction();
+        getUserInfos();
+        initPopupForm();
+        getSearchSumbit();
+        validRegisterForm();
+        validLoginForm();
+    }
 
     /* 
     Lancer IHM
     */
-    menuFunction();
-    getUserInfos();
-    initPopupForm();
-    getSearchSumbit();
-    validRegisterForm();
-    validLoginForm();
+    IHM();
     //
 });

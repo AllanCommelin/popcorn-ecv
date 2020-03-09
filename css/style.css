@@ -151,3 +151,18 @@ figure:hover + div.overview{
     display: none;
 }
 
+article.favorite {
+    position: relative;
+    margin: 1rem;
+    padding: 1rem;
+    color: white;
+    background-color: #9b4dca;
+}
+
+article.favorite:after {
+    content: "♥";
+    position: absolute;
+    top:10px;
+    right: 16px;
+}
+
