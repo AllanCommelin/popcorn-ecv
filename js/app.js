@@ -1,6 +1,7 @@
 /* 
 Attendre le chargement du DOM
 */
+
 document.addEventListener('DOMContentLoaded', () => {
 
     /* 
@@ -13,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const movieList = document.querySelector('#movieList');
     const moviePopin = document.querySelector('#moviePopin article');
     const formPopup = document.querySelector('#formPopup');
-    const homeContent = document.querySelector('#homeContent');
     /*
     Register form
      */
@@ -35,31 +35,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const favURL = 'https://api.dwsapp.io/api/favorite';
     const userURL = 'https://api.dwsapp.io/api/me';
     const profileContent = document.querySelector('#profileContent');
-    /*
-     MENU
-     */
-    const profileBtn = document.querySelector('#btnProfile');
-    const homeBtn = document.querySelector('#btnHome');
+
     const btnFormPupup = document.querySelector('#btnFormPupup');
 
 
     /* 
     Fonctions
     */
-    const menuFunction = () => {
-        profileBtn.addEventListener('click', function () {
-            if(profileContent.classList.contains("close")){
-                displayContent(homeContent, false)
-                displayContent(profileContent, true)
-            }
-        });
+    const getUserInfos = () => {
+        if(localStorage.getItem("userId")) {
+            fetchData({
+                url: userURL+'/'+localStorage.getItem("userId"),
+                method: 'GET'
+            })
+        } else {
+            formPopup.classList.remove('close');
+            formPopup.classList.add('open');
+            document.querySelector('#closeFormPopup').addEventListener('click', function () {
+                if(formPopup.classList.contains("close")) {
+                    formPopup.parentElement.classList.remove('close');
+                    formPopup.parentElement.classList.add('open');
+                } else {
+                    formPopup.parentElement.classList.add('close');
+                    formPopup.parentElement.classList.remove('open');
+                }
+            })
+        }
+    }
 
-        homeBtn.addEventListener('click', function () {
-            if(homeContent.classList.contains("close")){
-                displayContent(profileContent, false)
-                displayContent(homeContent, true)
-            }
-        })
+    const getFavoritesList = collection => {
+        for (let i = 0; i < collection.length; i++) {
+            //Reset des favoris
+            profileContent.innerHTML = '';
+            fetchFunction(parseInt(collection[i].id), true)
+        }
+    };
+    
+    const displayFavoritesList = (movie) => {
+        profileContent.innerHTML += `
+            <article class="favorite" id="fav-${movie.id}" movie-id="${movie.id}">
+                <i class="far fa-bookmark"></i> ${movie.title}
+            </article>
+        `;
     };
 
     const displayContent = (content, active) => {
@@ -72,35 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const getUserInfos = () => {
-        if(localStorage.getItem("userId")) {
-            fetchData({
-                url: userURL+'/'+localStorage.getItem("userId"),
-                method: 'GET'
-            })
-        } else {
-            formPopup.classList.remove('close');
-            formPopup.classList.add('open');
-            closeFormPopup(document.querySelector('#closeFormPopup'))
-        }
-    }
-
-    const getFavoritesList = collection => {
-        for (let i = 0; i < collection.length; i++) {
-            if(!collection[i].id.includes('tt')){// L'un de mes films en favorie a été enregistré avec un mauvaise ID, et comme on ne peut pas le supprimer je l'ignore avec cette condition
-                //Reset des favoris
-                profileContent.innerHTML = '';
-                fetchFunction(parseInt(collection[i].id), true)
-            }
-        }
-    };
-    
-    const displayFavoritesList = (movie) => {
-        profileContent.innerHTML += `
-            <article class="favorite">
-                ${movie.title}
-            </article>
-        `;
+    const displayError = (tag, msg) => {
+        searchLabel.textContent = msg;
+        tag.addEventListener('focus', () => searchLabel.textContent = '');
     };
 
     const validRegisterForm = () => {
@@ -121,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
     };
+
     const validLoginForm = () => {
         loginForm.addEventListener('submit', event => {
             event.preventDefault();
@@ -140,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
     };
+
     const getSearchSumbit = () => {
         searchForm.addEventListener('submit', event => {
             // Stop event propagation
@@ -150,11 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? fetchFunction(searchData.value)
                 : displayError(searchData, 'Minimum 1 caractère');
         });
-    };
-
-    const displayError = (tag, msg) => {
-        searchLabel.textContent = msg;
-        tag.addEventListener('focus', () => searchLabel.textContent = '');
     };
 
     /*
@@ -197,17 +185,15 @@ document.addEventListener('DOMContentLoaded', () => {
         btnFormPupup.addEventListener('click', () => {
             formPopup.classList.remove('close');
             formPopup.classList.add('open');
-            closeFormPopup(document.querySelector('#closeFormPopup'))
         })
-    }
-
-    const closeFormPopup = button => {
-        button.addEventListener('click', () => {
-            button.parentElement.parentElement.parentElement.classList.add('close');
-            setTimeout(() => {
-                button.parentElement.parentElement.parentElement.classList.remove('open');
-                button.parentElement.parentElement.parentElement.classList.remove('close');
-            }, 300)
+        document.querySelector('#closeFormPopup').addEventListener('click', () => {
+            if(formPopup.classList.contains("close")){
+                formPopup.classList.remove('close');
+                formPopup.classList.add('open');
+            } else {
+                formPopup.classList.add('close');
+                formPopup.classList.remove('open');
+            }
         })
     }
 
@@ -225,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(jsonData => {
                 if(favorite){
                     displayFavoritesList(jsonData)
+                    getPopinLink(document.querySelectorAll('.favorite'))
                 } else {
                     typeof keywords === 'number' ? displayPopin(jsonData) : displayMovieList(jsonData.results)
                 }
@@ -268,15 +255,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const displayPopin = data => {
         moviePopin.innerHTML = `
-                <div>
+                <div class="movie-img">
                     <img src="https://image.tmdb.org/t/p/w500/${data.poster_path}" alt="${data.original_title}">
                 </div>
-                <div>
-                    <h2>${data.original_title}</h2>
-                    <p>${data.overview}</p>
-                    <button>Voir en streaming</button>
-                    <button id="addFavorite" movie-id="${data.id}" movie-name="${data.original_title}">Ajouter en favori</button>
-                    <button id="closeButton">Close</button>
+                <div class="movie-details">
+                    <div class="resume">
+                        <h2>${data.original_title}</h2>
+                        <p>${data.overview}</p>
+                    </div>      
+                    <div class="actions">
+                        <button>Voir en streaming</button>
+                        <button id="addFavorite" movie-id="${data.id}" movie-name="${data.original_title}">Ajouter en favori</button>
+                        <button id="closeButton">Fermer</button>
+                    </div>
                 </div>
             `;
 
@@ -295,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 data: {
                     'author': localStorage.getItem("userId"),
                     'id': favBtn.getAttribute('movie-id'),
-                    'name': favBtn.getAttribute('movie-name')
+                    'title': favBtn.getAttribute('movie-name')
                 }
             })
             // Close popup after adding to favorite
@@ -306,18 +297,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const closePopin = button => {
         button.addEventListener('click', () => {
-            if(button.parentElement.parentElement.parentElement.classList.contains("close")) {
-                button.parentElement.parentElement.parentElement.classList.remove('close');
-                button.parentElement.parentElement.parentElement.classList.add('open');
+            if(moviePopin.parentElement.classList.contains("close")) {
+                moviePopin.parentElement.classList.remove('close');
+                moviePopin.parentElement.classList.add('open');
             } else {
-                button.parentElement.parentElement.parentElement.classList.remove('open');
-                button.parentElement.parentElement.parentElement.classList.add('close');
+                moviePopin.parentElement.classList.remove('open');
+                moviePopin.parentElement.classList.add('close');
             }
         })
     };
 
     const IHM = () => {
-        menuFunction();
+/*        let db = new PouchDB('chat_room');
+        if(localStorage.getItem("userId")){
+            db.put({
+                _id: new Date().toISOString(),
+                author: localStorage.getItem("userId"),
+                pseudo: 'Allan',
+                message: 'On est là',
+            });
+
+            db.changes().on('change', function() {
+                console.log('Ch-Ch-Changes');
+            });
+
+            db.replicate.to('https://couch.dwsapp.io/chat_room/');
+        }*/
         getUserInfos();
         initPopupForm();
         getSearchSumbit();

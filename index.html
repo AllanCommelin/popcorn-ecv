@@ -11,23 +11,31 @@
     </head>
     <body>
         <header>
-            <button id="btnHome">Accueil</button>
-            <button id="btnProfile">Profil</button>
-            <button id="btnFormPupup">Login / Register</button>
+            <div class="menu">
+                <button id="btnFormPupup">Connexion / Inscription</button>
+            </div>
+            <section id="homeContent" class="active">
+                <h2>PopCorn Movies</h2>
+                <form action="#" id="searchForm">
+                    <input type="text" placeholder="Rechercher un film" name="searchData" id="searchData" minlength="1" required>
+                    <button type="submit">Rechercher</button>
+                </form>
+            </section>
+            <hr>
+            <h4>Mes favoris</h4>
+            <section id="profileContent" class="open"></section>
         </header>
-
         <main>
             <section id="moviePopin" class="close">
                 <article></article>
             </section>
-
-            <section id="profileContent" class="close">
-            </section>
-
+            <section id="movieList"></section>
             <section id="formPopup" class="close">
                 <article>
                     <div class="btn-close">
-                        <button id="closeFormPopup">Close</button>
+                        <button id="closeFormPopup">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                     <div class="left">
                         <h3>Inscription</h3>
@@ -53,21 +61,8 @@
                     </div>
                 </article>
             </section>
-
-            <section id="homeContent" class="active">
-                <form action="#" id="searchForm">
-                    <label for="searchData">Search a movie <span></span></label>
-                    <input type="text" name="searchData" id="searchData" minlength="1" required>
-                    <button type="submit">Search</button>
-                </form>
-                <section id="movieList"></section>
-            </section>
         </main>
-
-        <footer>
-            <p>Under WTFPL - Allan Commelin 2020</p>
-        </footer>
-
+        <script src="https://cdn.jsdelivr.net/npm/pouchdb@7.1.1/dist/pouchdb.min.js"></script>
         <script src="./js/app.js"></script>
     </body>
 </html>

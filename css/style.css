@@ -1,17 +1,30 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css");
+
 body{
-    padding: 2rem;
+    background-color: #292929;
 }
 
 header{
-    position: relative;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 25%;
     z-index: 1;
+    padding: 1rem;
 }
 
-figure {
-    background: white;
-    box-shadow: 0 0 1rem rgba(0, 0, 0, .5);
+.menu {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 4rem;
+}
+
+main {
+    background-color: #191919;
+
+    margin-left: 25%;
     padding: 2rem;
-    transition: all .3s linear;
+    min-height: 100vh;
 }
 
 /* figure:hover{
@@ -22,10 +35,31 @@ figure:hover + div.overview{
     transform: rotateY(0deg);
 }
  */
+#movieList {
+    display: flex;
+    flex-wrap: wrap;
+}
+
 #movieList article {
     display: inline-block;
     position: relative;
+    width: calc((75% / 3) - 2rem);
+    overflow: hidden;
+    padding: .75rem;
 }
+
+figure {
+    background: white;
+    box-shadow: 0 0 1rem rgba(0, 0, 0, .5);
+    transition: all .3s linear;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1rem;
+}
+
+
 
 .overview {
     position: absolute;
@@ -74,14 +108,39 @@ figure:hover + div.overview{
     margin: auto;
     display: flex;
     justify-content: space-between;
-    width: 50%;
+    width: 65%;
     background: white;
     padding: 2rem;
 }
 
-#moviePopin article div{
+#moviePopin article .movie-details, #moviePopin article .movie-img {
     width: calc( 50% - 1rem );
 }
+
+#moviePopin article .movie-details {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+}
+
+#moviePopin .actions {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#moviePopin .actions button:not(:first-of-type) {
+    flex-grow: 1;
+}
+
+#moviePopin .actions button:last-of-type {
+    margin-left: 1rem;
+}
+
+#moviePopin .actions button:first-of-type {
+    display: block;
+    width: 100%;
+}
+
 
 
 #formPopup {
@@ -90,7 +149,7 @@ figure:hover + div.overview{
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.48);
+    background: rgba(241, 80, 37, 0.18);
     z-index: 0;
     display: flex;
     flex-direction: column;
@@ -126,11 +185,15 @@ figure:hover + div.overview{
 }
 
 #formPopup.open{
+    display: flex;
+    justify-content: center;
+    align-items: center;
     opacity: 1;
     z-index: 1000;
 }
 
 #formPopup.open.close, #formPopup.close{
+    display: none;
     opacity: 0;
     z-index: -100;
 }
@@ -144,6 +207,7 @@ figure:hover + div.overview{
 }
 
 #homeContent.active {
+    text-align: center;
     display: block;
 }
 
@@ -154,15 +218,30 @@ figure:hover + div.overview{
 article.favorite {
     position: relative;
     margin: 1rem;
-    padding: 1rem;
+    padding: .7rem;
     color: white;
-    background-color: #9b4dca;
+    cursor: pointer;
 }
 
-article.favorite:after {
-    content: "♥";
-    position: absolute;
-    top:10px;
-    right: 16px;
+article.favorite i {
+    padding-right: 1rem;
+    color: #DE6B48;
+}
+
+h2 {
+    color: #CCDAD1;
+}
+
+#searchData {
+    color: white;
+}
+
+#closeFormPopup {
+    margin: 2rem;
+}
+
+button {
+    background-color: #F15025;
+    border-color: #F15025;
 }
 
