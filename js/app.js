@@ -120,7 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         'pseudo': pseudoRegister.value
                     }
                 })
-                document.querySelector('#moviePopin').classList.add('close');
+                formPopup.classList.add('close');
+                formPopup.classList.remove('open');
             } else {
                 console.log('Une erreur est survenue !')
             }
@@ -140,7 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 })
                 // Close the popup
-                document.querySelector('#closeFormPopup').parentElement.parentElement.parentElement.classList.add('close');
+                formPopup.classList.add('close');
+                formPopup.classList.remove('open');
             } else {
                 console.log('Une erreur est survenue !')
             }
@@ -185,29 +187,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     // To update favorites if new favorite was created
                     getUserInfos()
                 }
-                if(jsonData.message.includes('Identity created')) {
-                    //Reset des favoris
-                    profileContent.innerHTML = '';
-                    favList = [];
-                    localStorage.setItem("userId",jsonData.data['user']._id)
-                }
                 if(jsonData.data['identity']) {
-                    if(!localStorage.getItem("userPseudo") && jsonData.data['identity']) {
-                        localStorage.setItem("userPseudo",jsonData.data['identity'].pseudo)
-                    }
-                    if(!localStorage.getItem("userId") && jsonData.data['identity']) {
-                        localStorage.setItem("userId",jsonData.data['identity']._id)
-                    }
-                    if (localStorage.getItem("userId")) getUserInfos();
-
+                    if(!localStorage.getItem("userId")) localStorage.setItem("userId",jsonData.data['identity']._id)
+                    if(!localStorage.getItem("userPseudo")) localStorage.setItem("userPseudo",jsonData.data['identity'].pseudo)
+                    // To get fav
+                    getUserInfos()
+                } else if (jsonData.data['user']) {
+                    if(!localStorage.getItem("userId")) localStorage.setItem("userId",jsonData.data['user']._id)
+                    if(!localStorage.getItem("userPseudo")) localStorage.setItem("userPseudo",jsonData.data['user'].pseudo)
                 }
                 if(jsonData.data) {
-                    if(!localStorage.getItem("userPseudo") && jsonData.data['user']) {
-                        localStorage.setItem("userPseudo",jsonData.data['user'].pseudo)
-                    }
-                    if(!localStorage.getItem("userId") && jsonData.data['user']) {
-                        localStorage.setItem("userId",jsonData.data['user']._id)
-                    }
                     if(jsonData.data['favorite']) {
                         getFavoritesList(jsonData.data.favorite)
                     }
