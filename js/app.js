@@ -69,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
         //Reset des favoris
         profileContent.innerHTML = '';
         favList = [];
-        console.log('collec', collection)
         for (let i = 0; i < collection.length; i++) {
             favList.push({
                 'fav-id': collection[i]['_id'],
@@ -231,7 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     getPopinLink(document.querySelectorAll('.favorite'))
                 } else {
                     let fav = favList.find( fav => fav['movie-id'] === keywords);
-                    console.log(fav)
                     typeof keywords === 'number' ? displayPopin(jsonData, fav ? fav['fav-id'] : null) : displayMovieList(jsonData.results)
                 }
             })
