@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     const btnFormPupup = document.querySelector('#btnFormPupup');
+    const userSpan = document.querySelector('#user');
 
 
     /* 
@@ -50,7 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 url: userURL+'/'+localStorage.getItem("userId"),
                 method: 'GET'
             })
+            userSpan.innerHTML = `<i class="fas fa-user"></i> Bonjour ${localStorage.getItem("userPseudo")}`;
+            btnFormPupup.style.visibility = 'hidden';
         } else {
+            btnFormPupup.style.visibility = 'visible';
             formPopup.classList.remove('close');
             formPopup.classList.add('open');
             document.querySelector('#closeFormPopup').addEventListener('click', function () {
@@ -183,11 +187,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     //Reset des favoris
                     profileContent.innerHTML = '';
                     favList = [];
-                    localStorage.setItem("userId",jsonData.data.identity._id)
+                    localStorage.setItem("userId",jsonData.data['user']._id)
                 }
                 if(jsonData.data) {
-                    if(!localStorage.getItem("userId") && jsonData.data['identity']) {
-                        localStorage.setItem("userId",jsonData.data.identity._id)
+                    console.log(jsonData.data)
+                    if(!localStorage.getItem("userPseudo") && jsonData.data['user']) {
+                        localStorage.setItem("userPseudo",jsonData.data['user'].pseudo)
+                    }
+                    if(!localStorage.getItem("userId") && jsonData.data['user']) {
+                        localStorage.setItem("userId",jsonData.data['user']._id)
                     }
                     if(jsonData.data['favorite']) {
                         getFavoritesList(jsonData.data.favorite)
