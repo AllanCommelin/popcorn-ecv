@@ -141,6 +141,16 @@ figure {
     width: 100%;
 }
 
+#user {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    font-size: 2rem;
+    text-align: left;
+    color: #DE6B48;
+    text-transform: capitalize;
+}
+
 
 
 #formPopup {

@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     const btnFormPupup = document.querySelector('#btnFormPupup');
+    const userSpan = document.querySelector('#user');
 
 
     /* 
@@ -50,7 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 url: userURL+'/'+localStorage.getItem("userId"),
                 method: 'GET'
             })
+            userSpan.innerHTML = `<i class="fas fa-user"></i> Bonjour ${localStorage.getItem("userPseudo")}`;
+            btnFormPupup.style.visibility = 'hidden';
         } else {
+            btnFormPupup.style.visibility = 'visible';
             formPopup.classList.remove('close');
             formPopup.classList.add('open');
             document.querySelector('#closeFormPopup').addEventListener('click', function () {
@@ -70,7 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
         profileContent.innerHTML = '';
         favList = [];
         for (let i = 0; i < collection.length; i++) {
-            favList.push(collection[i].id);
+            favList.push({
+                'fav-id': collection[i]['_id'],
+                'movie-id': parseInt(collection[i].id)
+            });
             fetchFunction(parseInt(collection[i].id), true)
         }
     };
@@ -111,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         'pseudo': pseudoRegister.value
                     }
                 })
-                document.querySelector('#closeFormPopup').parentElement.parentElement.parentElement.classList.add('close');
+                document.querySelector('#moviePopin').classList.add('close');
             } else {
                 console.log('Une erreur est survenue !')
             }
@@ -172,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.json()
             })
             .then(jsonData => {
-                if(jsonData.message.includes('Favorite created')) {
+                if(jsonData.message.includes('Favorite created') || jsonData.message.includes('Favorite deleted')) {
                     // To update favorites if new favorite was created
                     getUserInfos()
                 }
@@ -180,11 +187,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     //Reset des favoris
                     profileContent.innerHTML = '';
                     favList = [];
-                    localStorage.setItem("userId",jsonData.data.identity._id)
+                    localStorage.setItem("userId",jsonData.data['user']._id)
                 }
                 if(jsonData.data) {
-                    if(!localStorage.getItem("userId") && jsonData.data['identity']) {
-                        localStorage.setItem("userId",jsonData.data.identity._id)
+                    console.log(jsonData.data)
+                    if(!localStorage.getItem("userPseudo") && jsonData.data['user']) {
+                        localStorage.setItem("userPseudo",jsonData.data['user'].pseudo)
+                    }
+                    if(!localStorage.getItem("userId") && jsonData.data['user']) {
+                        localStorage.setItem("userId",jsonData.data['user']._id)
                     }
                     if(jsonData.data['favorite']) {
                         getFavoritesList(jsonData.data.favorite)
@@ -226,7 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     displayFavoritesList(jsonData)
                     getPopinLink(document.querySelectorAll('.favorite'))
                 } else {
-                    typeof keywords === 'number' ? displayPopin(jsonData) : displayMovieList(jsonData.results)
+                    let fav = favList.find( fav => fav['movie-id'] === keywords);
+                    typeof keywords === 'number' ? displayPopin(jsonData, fav ? fav['fav-id'] : null) : displayMovieList(jsonData.results)
                 }
             })
             .catch(err => console.error(err));
@@ -266,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ;
     };
 
-    const displayPopin = data => {
+    const displayPopin = (data, favId) => {
         moviePopin.innerHTML = `
                 <div class="movie-img">
                     <img src="https://image.tmdb.org/t/p/w500/${data.poster_path}" alt="${data.original_title}">
@@ -278,9 +290,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>      
                     <div class="actions">
                         <button>Voir en streaming</button>
-                        ${ 
-                            favList.includes(data.id.toString()) ? 
-                            `<button id="deleteFavorite" movie-id="${data.id}" movie-name="${data.original_title}">Supprimer des favoris</button>`
+                        ${
+                            favId ? 
+                            `<button id="deleteFavorite" fav-id="${favId}">Supprimer des favoris</button>`
                             :`<button id="addFavorite" movie-id="${data.id}" movie-name="${data.original_title}">Ajouter en favori</button>`
                         }
                         <button id="closeButton">Fermer</button>
@@ -291,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
         moviePopin.parentElement.classList.remove('close');
         moviePopin.parentElement.classList.add('open');
         closePopin(document.querySelector('#closeButton'))
-        favList.includes(data.id.toString()) ? deleteToFav() : addToFav() ;
+        favId ? deleteToFav() : addToFav() ;
     };
 
     const addToFav = () => {
@@ -308,8 +320,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 })
                 // Close popup after adding to favorite
-                document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.remove('open');
-                document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.add('close');
+                moviePopin.parentElement.classList.remove('open');
+                moviePopin.parentElement.classList.add('close');
             }
         })
     }
@@ -319,12 +331,12 @@ document.addEventListener('DOMContentLoaded', () => {
         favBtn.addEventListener('click', () => {
             if(localStorage.getItem("userId")){
                 fetchData({
-                    url: favURL+'/'+parseInt(favBtn.getAttribute('movie-id')),
+                    url: favURL+'/'+favBtn.getAttribute('fav-id'),
                     method: "DELETE",
                 })
                 // Close popup after adding to favorite
-                document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.remove('open');
-                document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.add('close');
+                moviePopin.parentElement.classList.remove('open');
+                moviePopin.parentElement.classList.add('close');
             }
         })
     }
