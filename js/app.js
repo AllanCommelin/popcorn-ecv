@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const favURL = 'https://api.dwsapp.io/api/favorite';
     const userURL = 'https://api.dwsapp.io/api/me';
     const profileContent = document.querySelector('#profileContent');
+    let favList = [];
+
 
     const btnFormPupup = document.querySelector('#btnFormPupup');
 
@@ -64,9 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const getFavoritesList = collection => {
+        //Reset des favoris
+        profileContent.innerHTML = '';
+        favList = [];
         for (let i = 0; i < collection.length; i++) {
-            //Reset des favoris
-            profileContent.innerHTML = '';
+            favList.push(collection[i].id);
             fetchFunction(parseInt(collection[i].id), true)
         }
     };
@@ -150,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const fetchData = (fetchConfig) => {
         let obj;
-        if(fetchConfig.method ==='GET'){
+        if(fetchConfig.method ==='GET' || fetchConfig.method ==='DELETE'){
             obj = {
                 method: fetchConfig.method,
                 headers: {'Content-Type': 'application/json'}
@@ -265,7 +269,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>      
                     <div class="actions">
                         <button>Voir en streaming</button>
-                        <button id="addFavorite" movie-id="${data.id}" movie-name="${data.original_title}">Ajouter en favori</button>
+                        ${ 
+                            favList.includes(data.id.toString()) ? 
+                            `<button id="deleteFavorite" movie-id="${data.id}" movie-name="${data.original_title}">Supprimer des favoris</button>`
+                            :`<button id="addFavorite" movie-id="${data.id}" movie-name="${data.original_title}">Ajouter en favori</button>`
+                        }
                         <button id="closeButton">Fermer</button>
                     </div>
                 </div>
@@ -274,24 +282,41 @@ document.addEventListener('DOMContentLoaded', () => {
         moviePopin.parentElement.classList.remove('close');
         moviePopin.parentElement.classList.add('open');
         closePopin(document.querySelector('#closeButton'))
-        addToFav();
+        favList.includes(data.id.toString()) ? deleteToFav() : addToFav() ;
     };
 
     const addToFav = () => {
         let favBtn = document.querySelector('#addFavorite');
         favBtn.addEventListener('click', () => {
-            fetchData({
-                url: favURL,
-                method: "POST",
-                data: {
-                    'author': localStorage.getItem("userId"),
-                    'id': favBtn.getAttribute('movie-id'),
-                    'title': favBtn.getAttribute('movie-name')
-                }
-            })
-            // Close popup after adding to favorite
-            document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.remove('open');
-            document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.add('close');
+            if(localStorage.getItem("userId")){
+                fetchData({
+                    url: favURL,
+                    method: "POST",
+                    data: {
+                        'author': localStorage.getItem("userId"),
+                        'id': favBtn.getAttribute('movie-id'),
+                        'title': favBtn.getAttribute('movie-name')
+                    }
+                })
+                // Close popup after adding to favorite
+                document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.remove('open');
+                document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.add('close');
+            }
+        })
+    }
+
+    const deleteToFav = () => {
+        let favBtn = document.querySelector('#deleteFavorite');
+        favBtn.addEventListener('click', () => {
+            if(localStorage.getItem("userId")){
+                fetchData({
+                    url: favURL+'/'+parseInt(favBtn.getAttribute('movie-id')),
+                    method: "DELETE",
+                })
+                // Close popup after adding to favorite
+                document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.remove('open');
+                document.querySelector('#closeButton').parentElement.parentElement.parentElement.classList.add('close');
+            }
         })
     }
 
