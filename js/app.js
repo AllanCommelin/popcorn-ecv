@@ -111,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         'pseudo': pseudoRegister.value
                     }
                 })
+                document.querySelector('#closeFormPopup').parentElement.parentElement.parentElement.classList.add('close');
             } else {
                 console.log('Une erreur est survenue !')
             }
@@ -175,11 +176,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     // To update favorites if new favorite was created
                     getUserInfos()
                 }
+                if(jsonData.message.includes('Identity created')) {
+                    //Reset des favoris
+                    profileContent.innerHTML = '';
+                    favList = [];
+                    localStorage.setItem("userId",jsonData.data.identity._id)
+                }
                 if(jsonData.data) {
                     if(!localStorage.getItem("userId") && jsonData.data['identity']) {
                         localStorage.setItem("userId",jsonData.data.identity._id)
                     }
-                    if(jsonData.data['favorite']) getFavoritesList(jsonData.data.favorite)
+                    if(jsonData.data['favorite']) {
+                        getFavoritesList(jsonData.data.favorite)
+                    }
                 }
             })
             .catch(err => console.error(err));
