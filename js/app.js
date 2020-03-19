@@ -53,7 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             userSpan.innerHTML = `<i class="fas fa-user"></i> Bonjour ${localStorage.getItem("userPseudo")}`;
             btnFormPupup.style.visibility = 'hidden';
+            document.querySelector('#titleFav').style.visibility = 'visible';
         } else {
+            document.querySelector('#titleFav').style.visibility = 'hidden';
             btnFormPupup.style.visibility = 'visible';
             formPopup.classList.remove('close');
             formPopup.classList.add('open');
@@ -189,8 +191,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     favList = [];
                     localStorage.setItem("userId",jsonData.data['user']._id)
                 }
+                if(jsonData.data['identity']) {
+                    if(!localStorage.getItem("userPseudo") && jsonData.data['identity']) {
+                        localStorage.setItem("userPseudo",jsonData.data['identity'].pseudo)
+                    }
+                    if(!localStorage.getItem("userId") && jsonData.data['identity']) {
+                        localStorage.setItem("userId",jsonData.data['identity']._id)
+                    }
+                    if (localStorage.getItem("userId")) getUserInfos();
+
+                }
                 if(jsonData.data) {
-                    console.log(jsonData.data)
                     if(!localStorage.getItem("userPseudo") && jsonData.data['user']) {
                         localStorage.setItem("userPseudo",jsonData.data['user'].pseudo)
                     }
